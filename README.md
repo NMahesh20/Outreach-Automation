@@ -32,7 +32,7 @@ The main HTML file contains:
 - **Navigation Bar** - Sticky header with responsive menu (Home, About, Credits)
 - **Form Modal** - Interactive form to collect user information (topic, skills, position)
 
-#### 2. **script.js** - Interactivity (219 lines)
+#### 2. **script.js** - Interactivity
 JavaScript handles:
 - **Mobile Menu Toggle** - Responsive hamburger menu functionality
 - **Scroll Navigation** - Active link highlighting based on viewport position
@@ -44,10 +44,7 @@ JavaScript handles:
 **Key Webhook:** Posts form data to N8N automation endpoint at `https://mahesh20.app.n8n.cloud/webhook/92baa9eb-667a-424d-9889-a170162c6a48`
 
 #### 3. **styles.css** - Design System (765 lines)
-Professional styling with:
-- **Color Scheme** - Modern blue gradient palette with dark background (suitable for dark mode)
 - **Typography** - Google Fonts "Lato" for clean, readable text
-- **Responsive Design** - Mobile-first approach with hamburger menu
 - **Components**:
   - Feature cards grid layout
   - Call-to-action buttons (primary and secondary states)
@@ -55,14 +52,14 @@ Professional styling with:
   - Smooth transitions and animations
 
 #### 4. **n8n-outreach-automation.json** - Automation Workflow
-N8N configuration file (511 lines) that defines:
+N8N configuration file that defines:
 - **Form Trigger** - User input form for collecting research interests, skills, and position
 - **Automation Logic** - Processes user submissions 
 - **Integration Points** - Configuration for external API calls and data processing
 
 ## Features
 
-✨ **6 Core Platform Features:**
+** Core Platform Features:**
 1. **Easy to Share** - Intuitive interface for sharing knowledge
 2. **Global Community** - Connect with people worldwide
 3. **Professional Growth** - Build reputation and expand network
@@ -72,13 +69,11 @@ N8N configuration file (511 lines) that defines:
 1. Clone or download the repository
 2. Open `index.html` in a modern web browser
 3. Navigate through the website and interact with the form
-4. Note: Automated workflows are currently disabled; But similar flow can help to get started
+4. Note: Automated workflows are currently disabled. But similar flow can help to get started
 
 ## Technology Stack
 
-- **Frontend:** HTML5, CSS3, JavaScript (Vanilla)
-- **Styling:** Custom CSS with CSS Variables for theming
-- **Automation:** N8N workflow engine (currently disabled)
+- **Frontend:** HTML5, CSS3, JavaScript 
+- **Automation:** N8N workflow engine 
 - **Deployment:** Netlify
-- **API Integration:** Webhook-based form submissions
 
