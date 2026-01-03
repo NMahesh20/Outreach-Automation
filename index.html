@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outreach - Share Your Skills</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Outreach</div>
+            <div class="nav-center">Presented by Team Quarks</div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#credits" class="nav-link">Credits</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">✨ Welcome to Outreach</div>
+            <h1 class="hero-title">Share your skills.<br><span class="gradient-text">Inspire the world.</span></h1>
+            <p class="hero-subtitle">Connect with passionate learners and mentors. Share your expertise in technology, arts, business, and beyond. Make an impact through knowledge sharing.</p>
+            <div class="hero-buttons">
+                <button class="cta-button primary" id="outreachBtn">Reach Out →</button>
+                <button class="cta-button secondary" onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'})">Learn More</button>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Active Sharers</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Learners</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">200+</div>
+                    <div class="stat-label">Topics</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Why Join Outreach?</h2>
+                <p>Everything you need to share knowledge and build meaningful connections</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎓</div>
+                    <h3>Easy to Share</h3>
+                    <p>Simple, intuitive platform to share your skills and knowledge with a global audience without complexity.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Global Community</h3>
+                    <p>Connect with learners and mentors worldwide. Break geographical barriers and impact lives across continents.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💼</div>
+                    <h3>Professional Growth</h3>
+                    <p>Build your reputation, expand your network, and establish yourself as a thought leader in your field.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Mentorship Program</h3>
+                    <p>Guide the next generation through structured mentorship and one-on-one learning opportunities.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Track Impact</h3>
+                    <p>See real-time analytics on your reach, engagement, and the lives you've positively impacted.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Safe & Secure</h3>
+                    <p>Your data is protected with enterprise-grade security. Connect with confidence on our platform.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="section-container">
+            <h2>About Outreach</h2>
+            <div class="about-content">
+                <div class="about-card">
+                    <div class="card-icon">🎯</div>
+                    <h3>Our Mission</h3>
+                    <p>To create a platform where skilled individuals can share their knowledge with those who are eager to learn, fostering a culture of continuous growth and mutual support.</p>
+                </div>
+                <div class="about-card">
+                    <div class="card-icon">🌍</div>
+                    <h3>Global Community</h3>
+                    <p>Connect with learners and mentors from around the world. Break geographical barriers and make an impact on lives across continents.</p>
+                </div>
+                <div class="about-card">
+                    <div class="card-icon">💡</div>
+                    <h3>Empower Through Knowledge</h3>
+                    <p>Share your expertise in your area of interest. Help others discover their potential and achieve their goals through mentorship and skill sharing.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Credits Section -->
+    <section id="credits" class="credits">
+        <div class="section-container">
+            <h2>Credits</h2>
+            <div class="credits-content">
+                <p><strong>Outreach by QUARKS</strong></p>
+                <p>A modern web application designed to connect skilled professionals with aspiring learners.</p>
+                <p style="margin-top: 30px; font-size: 14px; color: #888;">
+                    Built with HTML5, CSS3, and JavaScript<br>
+                    Designed for responsive and accessible user experience<br>
+                    © 2025 Quarks. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal Form -->
+    <div id="formModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Share Your Expertise</h2>
+            <form id="outreachForm">
+                <div class="form-group">
+                    <label for="topic">Research Topic/Interest *</label>
+                    <input type="text" id="topic" name="topic" placeholder="Enter a brief description of your research interest or topic for Google Scholar search" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="skills">Your Skills/Expertise *</label>
+                    <textarea id="skills" name="skills" placeholder="Describe your skills and expertise relevant to the research" rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="position">Position You Are Looking For *</label>
+                    <input type="text" id="position" name="position" placeholder="What position or opportunity are you seeking? (e.g., PhD, Postdoc, Research Assistant)" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

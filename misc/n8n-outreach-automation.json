@@ -1,0 +1,511 @@
+{
+  "name": "Academic Research Outreach and Email Automation v1",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Academic Research Outreach",
+        "formDescription": "Enter your research interests and background to find and contact relevant researchers",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Research Topic/Interest",
+              "placeholder": "Enter a brief description of your research interest or topic for Google Scholar search"
+            },
+            {
+              "fieldLabel": "Your Skills/Expertise",
+              "placeholder": "Describe your skills and expertise relevant to the research"
+            },
+            {
+              "fieldLabel": "Position You Are Looking For",
+              "placeholder": "What position or opportunity are you seeking? (e.g., PhD, Postdoc, Research Assistant)"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "38d96958-57cb-40fd-bb41-c726067230b5",
+      "name": "User Input Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        1056,
+        560
+      ],
+      "webhookId": "35c446ae-5d0c-4eb7-9f98-8b405c4d7574"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "maxPapers",
+              "value": 2,
+              "type": "number"
+            },
+            {
+              "id": "id-2",
+              "name": "serpApiKey",
+              "value": "DUMMY",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "pdfCoApiKey",
+              "value": "DUMMY-https://pdf.co/products/pdf-extractor-api",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "9316ac2f-3eb2-4467-a374-2b159417fd5b",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1280,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google_scholar"
+            },
+            {
+              "name": "q",
+              "value": "={{ $json.body.topic }} site:arxiv.org -report"
+            },
+            {
+              "name": "api_key",
+              "value": "={{ $('Workflow Configuration').first().json.serpApiKey }}"
+            },
+            {
+              "name": "num",
+              "value": "={{ $('Workflow Configuration').first().json.maxPapers }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "703988e6-98f9-4531-a65b-1f238c61e2ae",
+      "name": "Google Scholar Search via SerpAPI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1504,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract SerpAPI data\nconst response = $input.first().json;\nconst organicResults = response.organic_results || [];\n\n// ---- 1. Limit to first 20 papers ----\nconst limitedResults = organicResults.slice(0, 20);\n\nconst final = [];\n\nlimitedResults.forEach((paper, index) => {\n  \n  // ---- 2. Find first PDF resource (if any) ----\n  let pdf_url = null;\n\n  if (paper.resources && Array.isArray(paper.resources)) {\n    const pdfRes = paper.resources.find(r => r.file_format === \"PDF\");\n    if (pdfRes) {\n      pdf_url = pdfRes.link || null;\n    }\n  }\n\n  // ---- 3. Build summary combining snippet + publication summary if exists ----\n  const snippet = paper.snippet || \"\";\n  const pubSummary = paper.publication_info?.summary || \"\";\n  \n  const summary = [snippet, pubSummary]\n    .filter(s => s && s.trim() !== \"\")\n    .join(\" | \"); // combine cleanly\n\n  // ---- 4. Push final object ----\n  final.push({\n    paper_title: paper.title || \"\",\n    pdf_url,\n    summary\n  });\n});\n\nreturn final.map(item => ({ json: item }));\n"
+      },
+      "id": "cffac164-7ad7-48af-9ea0-f1a8abf2069e",
+      "name": "Extract Paper Details",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "id": "13543304-1b85-43d0-b5f1-08bc8ec00514",
+      "name": "Groq Llama Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3072,
+        976
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "tvfqQ2AZlwZey2oA",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Paper Title: {{ $json.paper_title }}\nAuthors: {{ $json.emails[0] }}\nAbstract: {{ $json.summary }}\n\nMy Background:\nResearch Interest: {{ $('Workflow Configuration').item.json.body.topic }}\nSkills: {{ $('Workflow Configuration').item.json.body.skills }}\nPosition Seeking: {{ $('Workflow Configuration').item.json.body.position }}\n\nMy Name: \"John\"\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an academic outreach email writer. Your task is to compose a professional, personalized email to research paper authors.\n\nGuidelines:\n1. Introduce yourself in the context of the specific paper mentioned\n2. Reference specific aspects of their research that align with your interests\n3. Highlight how your skills and background relate to their work\n4. Clearly state the position you are seeking (PhD, Postdoc, etc.)\n5. Be concise, professional, and genuine\n6. Keep the email under 250 words\n7. Include a clear call-to-action\n8. Return ONLY the email body text and mail subject with proper paragraphing, no subject line\n9. Include generic salutations and closing regards. If more than 2 authors refer them as \"Authors\"\n\nTone: Professional, enthusiastic but not overeager, respectful\n\n"
+        }
+      },
+      "id": "dc236f64-3920-4b69-8d45-35370c28452e",
+      "name": "Generate Email Content",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        3072,
+        752
+      ],
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "sendTo": "=DUMMY@gmail.com",
+        "subject": "={{ $json.output.subject }}",
+        "emailType": "text",
+        "message": "=Test Version!!!\nIntended Recipients: \n{{ $('Merge PDF Data with Papers').item.json.emails.join('\\n') }}\n\n{{ $json.output.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "4f2dfcc5-10f5-47f5-a4bc-28e46b8ed4f7",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3424,
+        752
+      ],
+      "webhookId": "762d171a-229e-4a04-8bc7-380186477381",
+      "alwaysOutputData": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RbZFYmWgoDyBkVLQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "emailSent",
+        "options": {}
+      },
+      "id": "d2ddc38a-dbf6-412c-bd62-8c5d817ecb78",
+      "name": "Aggregate Results",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        3648,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "92baa9eb-667a-424d-9889-a170162c6a48",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1056,
+        752
+      ],
+      "id": "305a5e99-2b80-4d04-be44-81cecfcc4756",
+      "name": "Webhook",
+      "webhookId": "92baa9eb-667a-424d-9889-a170162c6a48"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"body\": \"here goes email body\",\n\t\"subject\": \"here goes email subject\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        3216,
+        976
+      ],
+      "id": "793b9cf2-2626-4582-9ada-e2a0798d587f",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "content": "## QUARKS \n**OUTREACH** Project Workflow"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2992,
+        480
+      ],
+      "typeVersion": 1,
+      "id": "77d2efc5-1de7-4629-85ba-5d30afd0c2eb",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1952,
+        656
+      ],
+      "id": "5ae34a40-7ba1-4705-ad30-3bf6544af9b7",
+      "name": "Wait",
+      "webhookId": "6e5dafdf-4ae8-43b4-b1e2-f0198734fc49"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.pdf.co/v1/pdf/convert/to/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $('Workflow Configuration').first().json.pdfCoApiKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"url\": \"{{ $json.pdf_url }}\",\n\"pages\": \"0-2\"\n\n}",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "id": "ab55afd2-0446-404f-a5fe-b8952812de2a",
+      "name": "Convert PDF to Text",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2176,
+        752
+      ],
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2400,
+        752
+      ],
+      "id": "cc231207-4e09-4028-aec3-db4ec9185d27",
+      "name": "Download the PDF Text"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get papers from Extract Paper Details node\nconst papers = $('Extract Paper Details').all();\n\n// Get PDF text data from Convert PDF to Text node\nconst pdfData = $('Download the PDF Text').all();\n\n// Email regex pattern\nconst emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6})/g;\n\n// Merge the data\nconst results = papers.map((paper, index) => {\n  const paperJson = paper.json;\n  \n  // Get corresponding PDF data if available\n  const pdfItem = pdfData[index];\n  \n  // Check if PDF conversion failed (has error property)\n  let pdfText = '';\n  let emails = [];\n  let conversionError = null;\n  \n  if (pdfItem && pdfItem.json) {\n    // Check if there's an error in the PDF conversion\n    if (pdfItem.json.error) {\n      conversionError = pdfItem.json.error;\n    } else if (pdfItem.json.data) {\n      // PDF conversion was successful\n      pdfText = pdfItem.json.data;\n      // Extract emails from PDF text\n      emails = pdfText.match(emailRegex) || [];\n    }\n  }\n  \n  // Return merged object\n  return {\n    json: {\n      paper_title: paperJson.paper_title,\n      pdf_url: paperJson.pdf_url,\n      summary: paperJson.summary,\n      emails: emails,\n      pdf_text: pdfText,\n      pdf_conversion_error: conversionError\n    }\n  };\n});\n\nreturn results;"
+      },
+      "id": "8139cd26-0d69-410f-9501-6b2bb8bf5c26",
+      "name": "Merge PDF Data with Papers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2624,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2848,
+        752
+      ],
+      "id": "bc078412-5adf-47ad-af66-550bcf3e66b9",
+      "name": "Wait Again",
+      "webhookId": "38366857-ddf7-4b32-8d33-1c8c1542171d"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "User Input Form": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Google Scholar Search via SerpAPI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Scholar Search via SerpAPI": {
+      "main": [
+        [
+          {
+            "node": "Extract Paper Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Paper Details": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Llama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Email Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Email Content": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate Email Content",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Convert PDF to Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert PDF to Text": {
+      "main": [
+        [
+          {
+            "node": "Download the PDF Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download the PDF Text": {
+      "main": [
+        [
+          {
+            "node": "Merge PDF Data with Papers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge PDF Data with Papers": {
+      "main": [
+        [
+          {
+            "node": "Wait Again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Again": {
+      "main": [
+        [
+          {
+            "node": "Generate Email Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5b481ff1-709a-4ad9-9274-431041a27646",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a3e1e28ab6d0e5d60e8f9e8cf71e41e3d9dfb7de7eb2aa6b173930dfd4cb2ceb"
+  },
+  "id": "a5cxHqeD5jNbbjTG",
+  "tags": []
+}
