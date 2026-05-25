@@ -77,3 +77,6 @@ N8N configuration file that defines:
 - **Automation:** N8N workflow engine 
 - **Deployment:** Netlify
 
+## 🎖️ Honorable Mention
+[AvishkarArjan](https://github.com/AvishkarArjan) | Advice and idea generation. 
+
